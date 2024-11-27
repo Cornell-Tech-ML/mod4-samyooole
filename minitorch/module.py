@@ -1,3 +1,5 @@
+"""Module and Parameter classes for neural network modules."""
+
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Sequence, Tuple
@@ -11,7 +13,7 @@ class Module:
     ----------
         _modules : Storage of the child modules
         _parameters : Storage of the module's parameters
-        training : Whether the module is in training mode or evaluation mode
+        training : bool: Whether the module is in `train` mode (true) or `eval` mode (false) ??
 
     """
 
@@ -22,7 +24,7 @@ class Module:
     def __init__(self) -> None:
         self._modules = {}
         self._parameters = {}
-        self.training = True
+        self.training = False
 
     def modules(self) -> Sequence[Module]:
         """Return the direct child modules of this module."""
@@ -30,26 +32,52 @@ class Module:
         return list(m.values())
 
     def train(self) -> None:
-        """Set the mode of this module and all descendent modules to `train`."""
-        raise NotImplementedError("Need to include this file from past assignment.")
+        """Set the mode of this module and all descendent modules to train."""
+        #  Implement for Task 0.4.
+        self.training = True
+
+        for m in self.modules():
+            m.train()
+
+        # raise NotImplementedError("Need to implement for Task 0.4")
 
     def eval(self) -> None:
-        """Set the mode of this module and all descendent modules to `eval`."""
-        raise NotImplementedError("Need to include this file from past assignment.")
+        """Set the mode of this module and all descendent modules to eval"""
+        # Implement for Task 0.4.
+        self.mode = False
+
+        for m in self.modules():
+            m.eval()
+        # raise NotImplementedError("Need to implement for Task 0.4")
 
     def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
         """Collect all the parameters of this module and its descendents.
 
         Returns
         -------
-            The name and `Parameter` of each ancestor parameter.
+            The name and `Parameter` of each descendent parameter.
 
         """
-        raise NotImplementedError("Need to include this file from past assignment.")
+        params = [(k, v) for k, v in self._parameters.items()]
+        for name, module in self._modules.items():
+            for k, v in module.named_parameters():
+                params.append((f"{name}.{k}", v))
+        return params
+        # raise NotImplementedError("Need to implement for Task 0.4")
 
     def parameters(self) -> Sequence[Parameter]:
         """Enumerate over all the parameters of this module and its descendents."""
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # Implement for Task 0.4.
+        params = [v for v in self._parameters.values()]
+
+        for m in self.modules():
+            if m.parameters() is None:
+                continue
+            for v in m.parameters():
+                params.append(v)
+
+        return params
+        # raise NotImplementedError("Need to implement for Task 0.4")
 
     def add_parameter(self, k: str, v: Any) -> Parameter:
         """Manually add a parameter. Useful helper for scalar parameters.
@@ -85,6 +113,7 @@ class Module:
         return None
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Does some call - filler docstring."""
         return self.forward(*args, **kwargs)
 
     def __repr__(self) -> str:
