@@ -264,7 +264,7 @@ def _tensor_conv2d(
                         w_pos = oc * s20 + ic * s21 + ky * s22 + kx * s23
                         acc += input[in_pos] * weight[w_pos]
         out[i] = acc
-    #raise NotImplementedError("Need to implement for Task 4.2")
+
 
 
 tensor_conv2d = njit(_tensor_conv2d, parallel=True, fastmath=True)

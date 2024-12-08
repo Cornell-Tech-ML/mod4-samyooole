@@ -11,10 +11,10 @@ from .tensor_data import (
     index_to_position,
     shape_broadcast,
     to_index,
+    MAX_DIMS
 )
 
 Index = np.ndarray
-MAX_DIMS = 3
 
 if TYPE_CHECKING:
     from .tensor import Tensor
