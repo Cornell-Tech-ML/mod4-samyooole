@@ -7,12 +7,7 @@ import numpy as np
 from typing_extensions import Protocol
 
 from . import operators
-from .tensor_data import (
-    index_to_position,
-    shape_broadcast,
-    to_index,
-    MAX_DIMS
-)
+from .tensor_data import index_to_position, shape_broadcast, to_index, MAX_DIMS
 
 Index = np.ndarray
 

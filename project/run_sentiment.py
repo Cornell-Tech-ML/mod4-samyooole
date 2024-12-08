@@ -35,6 +35,21 @@ class Conv1d(minitorch.Module):
 
     def forward(self, input):
         # TODO: Implement for Task 4.5.
+        # inputs convolved with weights + bias returns the output
+        batch_size, in_channels, width = input.shape
+        out_channels, in_channels, kernel_width = self.weights.value.shape
+        output_width = width - kernel_width + 1
+
+        # Perform the convolution
+        output = minitorch.fast_conv(
+            input.view(batch_size, in_channels, width),
+            self.weights.value.view(out_channels, in_channels, kernel_width),
+        )
+
+        # Add the bias
+        output = output + self.bias.value.view(1, out_channels, 1)
+
+        return output
         raise NotImplementedError("Need to implement for Task 4.5")
 
 
@@ -62,14 +77,36 @@ class CNNSentimentKim(minitorch.Module):
         super().__init__()
         self.feature_map_size = feature_map_size
         # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        self.embedding_size = embedding_size
+        self.filter_sizes = filter_sizes
+        self.dropout = dropout
 
     def forward(self, embeddings):
         """
         embeddings tensor: [batch x sentence length x embedding dim]
         """
         # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+
+        conv_outputs = []
+        for filter_size in self.filter_sizes:
+            conv = Conv1d(self.embedding_size, self.feature_map_size, filter_size)
+            self.add_module(f"conv_{filter_size}", conv)
+            conv_output = conv(embeddings.permute(0, 2, 1)).relu()
+            conv_outputs.append(conv_output.max(dim=2).values)
+
+        # Concatenate along the feature map dimension
+        conv_output = minitorch.cat(conv_outputs, dim=1)
+
+        # Apply a linear layer followed by ReLU and Dropout
+        linear = Linear(conv_output.shape[1], 1)
+        self.add_module("linear", linear)
+        output = linear(conv_output).relu()
+        output = minitorch.dropout(output, self.dropout, self.training)
+
+        # Apply sigmoid over the class dimension
+        output = output.sigmoid()
+        return output
+        #raise NotImplementedError("Need to implement for Task 4.5")
 
 
 # Evaluation helper methods

@@ -361,7 +361,7 @@ def tensor_reduce(
         pos = cuda.threadIdx.x
         cache[pos] = reduce_value
 
-        if out_pos < out_size: 
+        if out_pos < out_size:
             to_index(out_pos, out_shape, out_index)
             o = index_to_position(out_index, out_strides)
 
@@ -377,16 +377,14 @@ def tensor_reduce(
                 while 2**x < BLOCK_DIM:
                     j = 2**x
 
-                    if pos % (j*2) == 0:
+                    if pos % (j * 2) == 0:
                         cache[pos] = fn(cache[pos], cache[pos + j])
                         cuda.syncthreads()
 
-                    x+=1
+                    x += 1
 
-            if pos == 0 :
+            if pos == 0:
                 out[o] = cache[0]
-
-        
 
     return jit(_reduce)  # type: ignore
 
@@ -481,7 +479,6 @@ def _tensor_matrix_multiply(
     """
     a_batch_stride = a_strides[0] if a_shape[0] > 1 else 0
     b_batch_stride = b_strides[0] if b_shape[0] > 1 else 0
-
 
     batch = cuda.blockIdx.z
 

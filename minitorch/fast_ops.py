@@ -178,10 +178,10 @@ def tensor_map(
                 out_index: Index = np.empty(MAX_DIMS, np.int32)
                 in_index: Index = np.empty(MAX_DIMS, np.int32)
                 broadcast_index(out_index, out_shape, in_shape, in_index)
-                o = index_to_position(out_index, out_strides)
+                # o = index_to_position(out_index, out_strides)
                 j = index_to_position(in_index, in_strides)
                 out[0] = fn(in_storage[j])
-        else: # fast route
+        else:  # fast route
             for i in prange(len(out)):
                 out[i] = fn(in_storage[i])
 
@@ -245,7 +245,6 @@ def tensor_zip(
             for i in prange(len(out)):
                 out[i] = fn(a_storage[i], b_storage[i])
 
-
     return njit(_zip, parallel=True)  # type: ignore
 
 
@@ -279,7 +278,6 @@ def tensor_reduce(
         a_strides: Strides,
         reduce_dim: int,
     ) -> None:
-       
         for i in prange(len(out)):
             out_index: Index = np.empty(MAX_DIMS, np.int32)
             reduce_size = a_shape[reduce_dim]
@@ -360,6 +358,7 @@ def _tensor_matrix_multiply(
                 )
 
                 out[out_position] = acc
+
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
 assert tensor_matrix_multiply is not None

@@ -260,7 +260,6 @@ class Permute(Function):
         """Forward pass for the Permute function."""
         ctx.save_for_backward(order)
         return a._new(a._tensor.permute(*[int(order[i]) for i in range(order.size)]))
-        
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
@@ -269,8 +268,7 @@ class Permute(Function):
         order2: List[int] = [
             a[0]
             for a in sorted(
-                enumerate([order[i] for i in range(order.size)]),
-                key=lambda a:a[1]
+                enumerate([order[i] for i in range(order.size)]), key=lambda a: a[1]
             )
         ]
 
@@ -280,7 +278,7 @@ class Permute(Function):
 class View(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, shape: Tensor) -> Tensor:
-        """Forward pass for the View function."""
+        """View operation (module 3)"""
         ctx.save_for_backward(a.shape)
         assert a._tensor.is_contiguous(), "Must be contiguous to view"
         shape2 = [int(shape[i]) for i in range(shape.size)]
@@ -290,7 +288,7 @@ class View(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
-        """Matrix Multiply backward (module 3)"""
+        """Matrix Multiply backward"""
         (original,) = ctx.saved_values
         return (
             minitorch.Tensor.make(

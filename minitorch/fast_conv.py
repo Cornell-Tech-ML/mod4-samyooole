@@ -8,7 +8,6 @@ from .autodiff import Context
 from .tensor import Tensor
 from .tensor_data import (
     MAX_DIMS,
-    Index,
     Shape,
     Strides,
     Storage,
@@ -22,6 +21,18 @@ Fn = TypeVar("Fn")
 
 
 def njit(fn: Fn, **kwargs: Any) -> Fn:
+    """Just-in-time compile a function with Numba.
+
+    Args:
+    ----
+        fn (Fn): The function to compile.
+        **kwargs (Any): Additional keyword arguments for Numba's njit.
+
+    Returns:
+    -------
+        Fn: The compiled function.
+
+    """
     return _njit(inline="always", **kwargs)(fn)  # type: ignore
 
 
@@ -106,8 +117,8 @@ def _tensor_conv1d(
                     in_pos = b * s1[0] + ic * s1[1] + ix * s1[2]
                     w_pos = oc * s2[0] + ic * s2[1] + k * s2[2]
                     acc += input[in_pos] * weight[w_pos]
-        out[i] = acc 
-    #raise NotImplementedError("Need to implement for Task 4.1")
+        out[i] = acc
+    # raise NotImplementedError("Need to implement for Task 4.1")
 
 
 tensor_conv1d = njit(_tensor_conv1d, parallel=True)
@@ -146,13 +157,26 @@ class Conv1dFun(Function):
         """Compute the gradients of the input and weight tensors.
 
         Args:
-        grad_weight = grad_output.zeros((out_channels, in_channels, kw))
-            ctx : Context
-            grad_output : Tensor
+        ----
+        ctx (Context): The context object containing saved values.
+        grad_output (Tensor): The gradient of the output tensor.
 
         Returns:
         -------
             Tuple[Tensor, Tensor] : gradients of input and weight tensors
+
+        """
+        """Compute the gradients of the input and weight tensors.
+
+        Args:
+        ----
+        ctx (Context): The context object containing saved values.
+        grad_output (Tensor): The gradient of the output tensor.
+
+        Returns:
+        -------
+            Tuple[Tensor, Tensor] : gradients of input and weight tensors
+
         """
         input, weight = ctx.saved_values
         batch, in_channels, w = input.shape
@@ -266,7 +290,6 @@ def _tensor_conv2d(
         out[i] = acc
 
 
-
 tensor_conv2d = njit(_tensor_conv2d, parallel=True, fastmath=True)
 
 
@@ -298,6 +321,7 @@ class Conv2dFun(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
+        """Backward function for Conv2dFun"""
         input, weight = ctx.saved_values
         batch, in_channels, h, w = input.shape
         out_channels, in_channels, kh, kw = weight.shape
