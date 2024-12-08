@@ -256,35 +256,25 @@ class IsClose(Function):
 
 class Permute(Function):
     @staticmethod
-    def forward(ctx: Context, t1: Tensor, dims: Tensor) -> Tensor:
+    def forward(ctx: Context, a: Tensor, order: Tensor) -> Tensor:
         """Forward pass for the Permute function."""
-        ctx.save_for_backward(dims)
-        # permuted_tensordata = t1._tensor
-        permuted_tensordata = t1._tensor.permute(
-            *[int(dim) for dim in dims.tuple()[0]]
-        )  # need to write a method to access multiple values analogue of item()
-        return minitorch.Tensor.make(
-            permuted_tensordata._storage, permuted_tensordata.shape, backend=t1.backend
-        )
+        ctx.save_for_backward(order)
+        return a._new(a._tensor.permute(*[int(order[i]) for i in range(order.size)]))
+        
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
-        """Backward pass for the Permute function."""
-        # Retrieve saved dimensions
-        (dims,) = ctx.saved_values
+        """Backward pass for the Permute function"""
+        order: Tensor = ctx.saved_values[0]
+        order2: List[int] = [
+            a[0]
+            for a in sorted(
+                enumerate([order[i] for i in range(order.size)]),
+                key=lambda a:a[1]
+            )
+        ]
 
-        # Create the inverse of the permutation
-        inverse_dims = [0] * len(dims.tuple()[0])
-        for i, dim in enumerate(dims.tuple()[0]):
-            inverse_dims[int(dim)] = i
-
-        # Permute the grad_output back to the original dimensions
-        grad_input = grad_output._tensor.permute(*inverse_dims)
-
-        # Return the gradient for t1 and None for dims (as dims is not differentiable)
-        return minitorch.Tensor.make(
-            grad_input._storage, grad_input.shape, backend=grad_output.backend
-        ), 0.0
+        return grad_output._new(grad_output._tensor.permute(*order2)), 0.0
 
 
 class View(Function):
